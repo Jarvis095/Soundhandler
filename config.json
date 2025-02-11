@@ -1,0 +1,20 @@
+{
+    "stream_max_range": 30,
+    "volume": 1,
+    "outputType": "sfx",
+    "loop": false,
+    "posX": 0,
+    "posY": 0,
+    "posZ": 0,
+    "rotX": 0,
+    "rotY": 0,
+    "rotZ": 0,
+    "panningModel": "HRTF",
+    "distanceModel": "inverse",
+    "maxDistance": 500,
+    "refDistance": 3,
+    "rolloffFactor": 1,
+    "coneInnerAngle": 360,
+    "coneOuterAngle": 360,
+    "coneOuterGain": 0
+}

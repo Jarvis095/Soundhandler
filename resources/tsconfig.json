@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "baseUrl": "game",
+    "paths": {
+      "@client/*": ["client/*"],
+      "@server/*": ["server/*"],
+      "@shared/*": ["shared/*"]
+    },
+    "module": "ESNext",
+    "target": "ESNext",
+    "allowJs": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "preserveWatchOutput": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "removeComments": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true
+  },
+  "exclude": ["node_modules"]
+}

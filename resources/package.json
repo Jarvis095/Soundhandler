@@ -1,0 +1,37 @@
+{
+  "name": "core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "-----BUILD-----": "",
+    "build": "concurrently \"pnpm:build:*\"",
+    "build:client": "node --es-module-specifier-resolution=node scripts/client",
+    "build:server": "node --es-module-specifier-resolution=node scripts/server",
+    "-----DEV-----": "",
+    "dev": "concurrently \"pnpm:dev:client\" \"pnpm:dev:server\" \"pnpm:tsc\" -c \"green.bold,cyan.bold\"",
+    "dev:client": "node --es-module-specifier-resolution=node scripts/client -dev",
+    "dev:server": "node --es-module-specifier-resolution=node scripts/server -dev",
+    "dev:web": "cd web && pnpm dev",
+    "-----TSC-----": "",
+    "tsc": "concurrently \"pnpm:tsc:*\" -c \"green.bold,cyan.bold\"",
+    "tsc:client": "cd game/client && npx tsc -w",
+    "tsc:server": "cd game/server && npx tsc -w"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@citizenfx/client": "latest",
+    "@citizenfx/server": "latest",
+    "@types/node": "^22.2.0",
+    "concurrently": "^8.2.2",
+    "esbuild": "^0.23.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@overextended/ox_lib": "^3.28.1",
+    "cron": "^3.2.1"
+  }
+}
