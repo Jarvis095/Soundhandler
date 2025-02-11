@@ -1,14 +1,11 @@
 {
-  "name": "sounitycef",
   "version": "0.0.1",
-  "description": "UI Part of Sounity",
   "main": "src/main.ts",
   "scripts": {
     "dev": "vite serve",
     "build": "vite build",
     "preview": "vite preview"
   },
-  "author": "Arayni <arayni.max@gmail.com>",
   "license": "UNLICENSED",
   "devDependencies": {
     "typescript": "^4.4.2",
