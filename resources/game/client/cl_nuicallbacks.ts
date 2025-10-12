@@ -1,4 +1,4 @@
-import { Config } from "./cl_main";
+import { Config, sounityClient } from "./cl_main";
 
 const NUI_CALLBACK_TYPES = {
     READY: "sounity:ready",
@@ -9,11 +9,6 @@ const NUI_CALLBACK_TYPES = {
 RegisterNuiCallbackType(NUI_CALLBACK_TYPES.READY);
 on(`__cfx_nui:${NUI_CALLBACK_TYPES.READY}`, () => {
     emit('Sounity:Ready');
-    emit('Sounity:CreateSoundFilter', "underwater", "biquad", JSON.stringify({
-        Q: 1,
-        frequency: 100,
-        type: "lowpass"
-    }));
 });
 
 RegisterNuiCallbackType(NUI_CALLBACK_TYPES.GET_DEFAULTS);
@@ -39,8 +34,8 @@ on(`__cfx_nui:${NUI_CALLBACK_TYPES.GET_DEFAULTS}`, (data: any, cb: Function) => 
     }));
 });
 
-RegisterNuiCallbackType(NUI_CALLBACK_TYPES.SOUND_ENDED);
+/* RegisterNuiCallbackType(NUI_CALLBACK_TYPES.SOUND_ENDED);
 on(`__cfx_nui:${NUI_CALLBACK_TYPES.SOUND_ENDED}`, (data: any) => {
-    emit('Sounity:DisposeSound', data.identifier);
-    emit('Sounity:DeleteOnComplete', data.identifier);
-});
+    sounityClient.onDisposeSound(data.identifier);
+    sounityClient.onDeleteOnComplete(data.identifier);
+}); */

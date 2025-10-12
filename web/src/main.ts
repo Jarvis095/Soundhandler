@@ -85,7 +85,6 @@ window.addEventListener('message', (event) => {
   }
 });
 
-// Notify the server that the client is ready
 fetch(`https://summit_soundhandler/sounity:ready`).catch((error) => {
   console.error('Failed to notify server:', error);
 });

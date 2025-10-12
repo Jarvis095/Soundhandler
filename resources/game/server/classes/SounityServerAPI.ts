@@ -1,123 +1,126 @@
-
+import { entitySound, zonalSound } from '@server/api';
 import { Config } from '@server/sv_main';
-import { SounitySound } from './SounitySound';
-import { distanceBetween } from '@shared/utils';
+import axios from 'axios';
+import { parseBuffer } from 'music-metadata';
 
 export class SounityServerAPI {
-    private MAX_RANGE = new Map<string, number>();
     protected static idCounter: number = 1;
     protected identifierPrefix: string = 'server';
     protected sounds: Record<string, any> = {};
+    protected timers: Record<string, NodeJS.Timeout> = {};
 
     constructor() {
-        exports('AddListenerFilter', this.AddListenerFilter.bind(this));
-        exports('RemoveListenerFilter', this.RemoveListenerFilter.bind(this));
-        exports('CreateSound', this.CreateSound.bind(this));
         exports('StartSound', this.StartSound.bind(this));
-        exports('MoveSound', this.MoveSound.bind(this));
-        exports('RotateSound', this.RotateSound.bind(this));
         exports('StopSound', this.StopSound.bind(this));
-        exports('DisposeSound', this.DisposeSound.bind(this));
-        exports('AttachSound', this.AttachSound.bind(this));
-        exports('DetachSound', this.DetachSound.bind(this));
-        exports('AddSoundFilter', this.AddSoundFilter.bind(this));
-        exports('RemoveSoundFilter', this.RemoveSoundFilter.bind(this));
+        exports('StartAttachSound', this.StartAttachSound.bind(this));
         exports('ChangeVolume', this.ChangeVolume.bind(this));
         exports('ChangeRefDistance', this.ChangeRefDistance.bind(this));
         exports('ChangeLoop', this.ChangeLoop.bind(this));
-    }
-
-    public AddListenerFilter(playerId: number, filterName: string): void {
-        TriggerClientEvent("Sounity:AddListenerFilter", playerId, filterName);
-    }
-
-    public RemoveListenerFilter(playerId: number, filterName: string): void {
-        TriggerClientEvent("Sounity:RemoveListenerFilter", playerId, filterName);
-    }
-
-    public Tick(): void {
-        for (const sound of Object.values(this.sounds)) {
-            for (const player of getPlayers()) {
-                const ped = GetPlayerPed(player);
-
-                if (ped === 0) continue;
-
-                const distance = distanceBetween(GetEntityCoords(ped), sound.getPosition());
-                if (distance <= (this.MAX_RANGE.get(sound.identifier) || 10) && !sound.playersInRange.includes(player)) {
-                    sound.PlayerInRange(player);
-                } else if (distance > (this.MAX_RANGE.get(sound.identifier) || 10) && sound.playersInRange.includes(player)) {
-                    sound.PlayerOutOfRange(player);
-                }
-            }
-        }
     }
 
     protected getSoundInstance(identifier: string) {
         if (!this.sounds[identifier]) {
             throw new Error(`Unknown identifier '${identifier}'`);
         }
-
         return this.sounds[identifier];
     }
 
-    public CreateSound(source: string, options_json: string = "{}"): string {
+    public async StartSound(source: string, options_json: string = "{}", timer?: number, volume?: number): Promise<string> {
         const options = JSON.parse(options_json);
-        const identifier = `${this.identifierPrefix}${SounityServerAPI.idCounter++}`;
-        const sound = new SounitySound(identifier, source, options);
-        this.MAX_RANGE.set(identifier, options.maxRange || 10);
-        this.sounds[identifier] = sound;
+        const identifier = `sounds_${this.identifierPrefix}_${SounityServerAPI.idCounter++}`;
+
+        const optionsS = {
+            identifier: identifier,
+            source: source,
+            options: options,
+            startTime: timer ? timer : GetGameTimer(),
+            resDistance: Config.refDistance,
+            volume: volume ?? Config.volume,
+            loop: options.loop ?? Config.loop
+        };
+
+        GlobalState.set('summit_soundhandler', JSON.stringify(optionsS), true);
+        zonalSound[identifier] = optionsS;
+
+        await this.scheduleSoundEnd(identifier, optionsS.source, options.loop ?? Config.loop);
 
         return identifier;
     }
 
-    public StartSound(identifier: string): void {
-        this.getSoundInstance(identifier).Start();
+    public async StartAttachSound(source: string, entity: string, maxRange: number, timer?: number, loop?: boolean, volume?: number): Promise<string> {
+        const identifier = `sounds_${this.identifierPrefix}_${SounityServerAPI.idCounter++}`;
+
+        const optionsSa = {
+            identifier: identifier,
+            source: source,
+            entity: entity,
+            options: {
+                attachTo: entity,
+            },
+            maxRange: maxRange,
+            startTime: timer ? timer : GetGameTimer(),
+            resDistance: Config.refDistance,
+            volume: volume ?? Config.volume,
+            loop: loop ?? Config.loop
+        };
+
+        GlobalState.set('summit_soundhandler_entity', JSON.stringify(optionsSa), true);
+        entitySound[identifier] = optionsSa;
+
+        await this.scheduleSoundEnd(identifier, optionsSa.source, loop ?? Config.loop);
+
+        return identifier;
     }
 
     public ChangeVolume(identifier: string, volume: number): void {
-        this.getSoundInstance(identifier).ChangeVolume(volume);
+        emitNet('summit_soundhandler:changeVolume', -1, identifier, volume);
     }
 
     public ChangeRefDistance(identifier: string, refDistance: number): void {
-        this.getSoundInstance(identifier).ChangeRefDistance(refDistance);
+        emitNet('summit_soundhandler:changeRefDistance', -1, identifier, refDistance);
     }
 
-    public ChangeLoop(identifier: string, loop: boolean): void {
-        this.getSoundInstance(identifier).ChangeLoop(loop);
-    }
+    public async ChangeLoop(identifier: string, loop: boolean): Promise<void> {
+        const soundInstance = zonalSound[identifier] || entitySound[identifier];
+        if (!soundInstance) return;
 
-    public MoveSound(identifier: string, posX: number, posY: number, posZ: number): void {
-        this.getSoundInstance(identifier).Move(posX, posY, posZ);
-    }
+        soundInstance.loop = loop;
+        emitNet('summit_soundhandler:changeLoop', -1, identifier, loop);
 
-    public RotateSound(identifier: string, rotX: number, rotY: number, rotZ: number): void {
-        this.getSoundInstance(identifier).Rotate(rotX, rotY, rotZ);
-    }
-
-    public StopSound(identifier: string): void {
-        this.getSoundInstance(identifier).Stop();
-    }
-
-    public DisposeSound(identifier: string): void {
-        if (this.sounds[identifier]) {
-            this.getSoundInstance(identifier).Dispose();
-            delete this.sounds[identifier];
+        if (loop && this.timers[identifier]) {
+            clearTimeout(this.timers[identifier]);
+            delete this.timers[identifier];
+        } else if (!loop && !this.timers[identifier]) {
+            await this.scheduleSoundEnd(identifier, soundInstance.source, loop);
         }
     }
 
-    public AttachSound(identifier: string, entityId: number): void {
-        this.getSoundInstance(identifier).Attach(entityId);
+    public StopSound(identifier: string): void {
+        if (this.timers[identifier]) {
+            clearTimeout(this.timers[identifier]);
+            delete this.timers[identifier];
+        }
+        emitNet('summit_soundhandler:stopSound', -1, identifier);
     }
 
-    public DetachSound(identifier: string): void {
-        this.getSoundInstance(identifier).Detach();
+    protected async scheduleSoundEnd(identifier: string, source: string, loop: boolean): Promise<void> {
+        if (loop) return;
+
+        const duration = await this.getSoundLength(source);
+        this.timers[identifier] = setTimeout(() => {
+            emitNet('summit_soundhandler:soundEnded', -1, identifier);
+            delete this.timers[identifier];
+        }, duration * 1000);
     }
 
-    public AddSoundFilter(identifier: string, filterName: string): void {
-        this.getSoundInstance(identifier).AddFilter(filterName);
-    }
-
-    public RemoveSoundFilter(identifier: string, filterName: string): void {
-        this.getSoundInstance(identifier).RemoveFilter(filterName);
+    public async getSoundLength(url: string): Promise<number> {
+        try {
+            const response = await axios.get(url, { responseType: 'arraybuffer' });
+            const metadata = await parseBuffer(response.data, { mimeType: 'audio/mpeg' });
+            return metadata.format.duration || 0;
+        } catch (error) {
+            console.error(`Error fetching sound length for ${url}:`, error);
+            return 0;
+        }
     }
 }

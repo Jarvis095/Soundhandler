@@ -10,8 +10,8 @@
     "build:server": "node --es-module-specifier-resolution=node scripts/server",
     "-----DEV-----": "",
     "dev": "concurrently \"pnpm:dev:client\" \"pnpm:dev:server\" \"pnpm:tsc\" -c \"green.bold,cyan.bold\"",
-    "dev:client": "node --es-module-specifier-resolution=node scripts/client -dev",
-    "dev:server": "node --es-module-specifier-resolution=node scripts/server -dev",
+    "dev:client": "node --es-module-specifier-resolution=node scripts/client --dev",
+    "dev:server": "node --es-module-specifier-resolution=node scripts/server --dev",
     "dev:web": "cd web && pnpm dev",
     "-----TSC-----": "",
     "tsc": "concurrently \"pnpm:tsc:*\" -c \"green.bold,cyan.bold\"",
@@ -25,13 +25,15 @@
   "devDependencies": {
     "@citizenfx/client": "latest",
     "@citizenfx/server": "latest",
-    "@types/node": "^22.2.0",
+    "@types/node": "^22.16.5",
     "concurrently": "^8.2.2",
     "esbuild": "^0.23.0",
+    "javascript-obfuscator": "^4.1.1",
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@overextended/ox_lib": "^3.28.1",
-    "cron": "^3.2.1"
+    "@overextended/ox_lib": "^3.29.0",
+    "axios": "^1.11.0",
+    "music-metadata": "^11.7.1"
   }
 }

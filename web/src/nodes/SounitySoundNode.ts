@@ -77,15 +77,6 @@ export default class SounitySourceNode extends SounityBaseNode {
 
       this.audioBufferSourceNode.onended = () => {
         if (this.loop) return;
-        fetch(`https://summit_soundhandler/soundEnded`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ identifier: this.identifier }),
-        }).catch((error) => {
-          console.error('Failed to notify server:', error);
-        });
         this.setState(ESounitySourceNodeState.FINISHED);
       };
       this.volumeGainNode = this.audioCtx.createGain();
