@@ -504,8 +504,9 @@ Contributions are welcome! Please:
 - Include examples in documentation
 - Test with multiple audio sources and scenarios
 
+```
 ## Changelog
-
+```
 ### Version 2.0.0 - Latest
 **Major Features & Enhancements:**
 
@@ -569,5 +570,6 @@ Contributions are welcome! Please:
 - Simple coordinate-based positioning
 
 ---
+
 
 For support and updates, visit the [GitHub repository](https://github.com/Jarvis095/Soundhandler).
