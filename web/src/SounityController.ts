@@ -180,4 +180,25 @@ export default class SountiyController {
   public getSfxVolume() {
     return this.sfxVolume / 10;
   }
+
+  public dispose() {
+    // Clear the tick interval
+    if (this.tickId) {
+      clearInterval(this.tickId);
+    }
+
+    // Dispose all sound nodes
+    for (const soundNode of Object.values(this.soundNodes)) {
+      soundNode.dispose();
+    }
+    this.soundNodes = {};
+
+    // Dispose output node
+    this.outputNode.dispose();
+
+    // Close audio context
+    if (this.audioCtx.state !== 'closed') {
+      this.audioCtx.close();
+    }
+  }
 }

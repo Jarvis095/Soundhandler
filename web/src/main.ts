@@ -75,7 +75,7 @@ const handlers: {
   },
 };
 
-window.addEventListener('message', (event) => {
+const messageHandler = (event: MessageEvent) => {
   if (event.data.type in handlers) {
     try {
       handlers[event.data.type](event.data);
@@ -83,7 +83,15 @@ window.addEventListener('message', (event) => {
       console.error('Error handling message:', error);
     }
   }
-});
+};
+
+window.addEventListener('message', messageHandler);
+
+// Cleanup function (can be called when NUI is being destroyed)
+(window as any).cleanupSounity = () => {
+  window.removeEventListener('message', messageHandler);
+  sounityController.dispose();
+};
 
 fetch(`https://summit_soundhandler/sounity:ready`).catch((error) => {
   console.error('Failed to notify server:', error);

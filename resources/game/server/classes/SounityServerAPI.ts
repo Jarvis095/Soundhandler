@@ -96,20 +96,33 @@ export class SounityServerAPI {
     }
 
     public StopSound(identifier: string): void {
-        if (this.timers[identifier]) {
-            clearTimeout(this.timers[identifier]);
+        const timer = this.timers[identifier];
+        if (timer) {
+            clearTimeout(timer);
             delete this.timers[identifier];
         }
         emitNet('summit_soundhandler:stopSound', -1, identifier);
+        
+        // Clean up sound instances
+        delete zonalSound[identifier];
+        delete entitySound[identifier];
     }
 
     protected async scheduleSoundEnd(identifier: string, source: string, loop: boolean): Promise<void> {
         if (loop) return;
 
+        // Clear any existing timer for this identifier
+        if (this.timers[identifier]) {
+            clearTimeout(this.timers[identifier]);
+        }
+
         const duration = await this.getSoundLength(source);
         this.timers[identifier] = setTimeout(() => {
             emitNet('summit_soundhandler:soundEnded', -1, identifier);
             delete this.timers[identifier];
+            // Clean up sound instances
+            delete zonalSound[identifier];
+            delete entitySound[identifier];
         }, duration * 1000);
     }
 

@@ -171,7 +171,36 @@ export default class SounitySourceNode extends SounityBaseNode {
   }
 
   dispose() {
+    // Stop the sound if playing
+    if (this.audioBufferSourceNode) {
+      try {
+        this.audioBufferSourceNode.stop(0);
+      } catch (e) {
+        // Already stopped, ignore
+      }
+      // Remove onended listener by setting to null
+      this.audioBufferSourceNode.onended = null;
+    }
+
+    // Disconnect all nodes
     this.disconnect();
+
+    // Disconnect and null out audio nodes to break references
+    if (this.volumeGainNode) {
+      this.volumeGainNode.disconnect();
+      this.volumeGainNode = null;
+    }
+    if (this.pannerNode) {
+      this.pannerNode.disconnect();
+      this.pannerNode = null;
+    }
+
+    // Clear references
+    this.audioBufferSourceNode = null;
+    this.audioBuffer = null;
+
+    // Remove all event listeners
+    this.removeAllListeners();
   }
 
   private getVolume() {

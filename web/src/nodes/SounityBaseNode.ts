@@ -126,6 +126,26 @@ export default abstract class SounityBaseNode {
     return this.filterChain.length > 0;
   }
 
+  protected removeAllListeners() {
+    this.eventEmitter.removeAllListeners();
+  }
+
+  dispose() {
+    // Disconnect all audio nodes
+    this.disconnect();
+
+    // Disconnect and cleanup all active filters
+    for (const filterNode of Object.values(this.activeFilters)) {
+      filterNode.disconnect();
+    }
+    this.activeFilters = {};
+    this.filterChain = [];
+    this.outputFilterNode = null;
+
+    // Remove all event listeners
+    this.removeAllListeners();
+  }
+
   async removeFilter(filterName: string) {
     //@ts-ignore
     if (this.loadingFilters[filterName]) {

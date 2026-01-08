@@ -5,16 +5,16 @@
   "main": "index.js",
   "scripts": {
     "-----BUILD-----": "",
-    "build": "concurrently \"pnpm:build:*\"",
+    "build": "concurrently \"bun:build:*\"",
     "build:client": "node --es-module-specifier-resolution=node scripts/client",
     "build:server": "node --es-module-specifier-resolution=node scripts/server",
     "-----DEV-----": "",
-    "dev": "concurrently \"pnpm:dev:client\" \"pnpm:dev:server\" \"pnpm:tsc\" -c \"green.bold,cyan.bold\"",
+    "dev": "concurrently \"bun:dev:client\" \"bun:dev:server\" \"bun:tsc\" -c \"green.bold,cyan.bold\"",
     "dev:client": "node --es-module-specifier-resolution=node scripts/client --dev",
     "dev:server": "node --es-module-specifier-resolution=node scripts/server --dev",
-    "dev:web": "cd web && pnpm dev",
+    "dev:web": "cd web && bun dev",
     "-----TSC-----": "",
-    "tsc": "concurrently \"pnpm:tsc:*\" -c \"green.bold,cyan.bold\"",
+    "tsc": "concurrently \"bun:tsc:*\" -c \"green.bold,cyan.bold\"",
     "tsc:client": "cd game/client && npx tsc -w",
     "tsc:server": "cd game/server && npx tsc -w"
   },
@@ -32,7 +32,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@overextended/ox_lib": "^3.29.0",
+    "@overextended/ox_lib": "latest",
     "axios": "^1.11.0",
     "music-metadata": "^11.7.1"
   }

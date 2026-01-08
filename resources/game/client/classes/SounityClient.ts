@@ -42,16 +42,22 @@ export class SounityClient {
         if (jsonOptions) {
             const options: any = JSON.parse(jsonOptions);
             const startTimeX = Math.max(0, startTime - options.startTime);
-            this.sounityClientAPI.CreateSound(identifier, jsonOptions);
-            this.sounityClientAPI.StartSound(
-                identifier,
-                startTimeX,
-                this.refDistance.get(identifier) || 3,
-                this.volume.get(identifier) || 1,
-                this.loop.get(identifier) || false
-            );
-        };
-
+            try {
+                this.sounityClientAPI.CreateSound(identifier, jsonOptions);
+                this.sounityClientAPI.StartSound(
+                    identifier,
+                    startTimeX,
+                    this.refDistance.get(identifier) || 3,
+                    this.volume.get(identifier) || 1,
+                    this.loop.get(identifier) || false
+                );
+            } catch (error) {
+                console.error(`Failed to play sound ${identifier}:`, error);
+                // Clean up on error to prevent tick leak
+                this.stopTick(identifier);
+                this.onDeleteOnComplete(identifier);
+            }
+        }
     }
 
     public onStopSound(identifier: string): void {
