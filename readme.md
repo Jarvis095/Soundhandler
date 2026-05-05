@@ -504,9 +504,9 @@ Contributions are welcome! Please:
 - Include examples in documentation
 - Test with multiple audio sources and scenarios
 
-```
+
 ## Changelog
-```
+
 ### Version 2.0.0 - Latest
 **Major Features & Enhancements:**
 
