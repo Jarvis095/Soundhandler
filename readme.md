@@ -467,7 +467,7 @@ soundhandler/
 ├── build/                   # Compiled Lua/JS output
 ├── config.json              # Configuration
 └── fxmanifest.lua          # Resource manifest
-
+```
 ## Performance Considerations
 
 - **Audio File Format**: Use MP3 for best compatibility and file size
